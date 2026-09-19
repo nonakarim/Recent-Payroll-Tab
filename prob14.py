@@ -2,7 +2,7 @@ import streamlit as st
 import time
 
 if "payroll_records" not in st.session_state:
-    st.session_state.payroll_records = [{}]
+    st.session_state.payroll_records = []
 
 employees = [
     {"id": 1001, "name": "Ahmed", "hourly_rate": 120},
@@ -11,7 +11,9 @@ employees = [
     {"id": 1004, "name": "Mariam", "hourly_rate": 200}
 ]
 
-st.title("Recent Payroll Tab")
+st.title("Recent Payroll Tab", text_alignment="center")
+
+st.divider()
 
 with st.sidebar:
     st.header("Details")
@@ -55,7 +57,7 @@ with tab1:
             hourly_rate = employee["hourly_rate"]
             basic_salary = hourly_rate * employee_working_hours
             OT_pay = hourly_rate * employee_overtime_hours * 1.5
-            gross_salary = hourly_rate + OT_pay + bonus
+            gross_salary = basic_salary + OT_pay + bonus
             net_salary = gross_salary - deduction
 
             st.markdown(f"""
@@ -80,9 +82,53 @@ with tab1:
                         - **Performance:** {performance}
                     """)
 
-            st.session_state.payroll_records = [{"ID": employee["id"], "Name": employee["name"], "Working Hours": employee_working_hours, "Overtime Hours": employee_overtime_hours}]
+            st.session_state.payroll_records.append({
+                                                    "ID": employee["id"],
+                                                    "Name": employee["name"],
+                                                    "Working Hours": employee_working_hours,
+                                                    "Overtime Hours": employee_overtime_hours,
+                                                    "Basic Salary": basic_salary,
+                                                    "OT Pay": OT_pay,
+                                                    "Bonus": bonus,
+                                                    "Gross Salary": gross_salary,
+                                                    "Deduction": deduction,
+                                                    "Net Salary": net_salary,
+                                                    "Performance": performance
+                                                })
 
             st.success("Payroll Completed Successfully")
 
 with tab2:
+    if st.session_state.payroll_records:
 
+        record = st.session_state.payroll_records[-1]
+
+        col1, col2 = st.columns([1, 1])
+
+        with col1:
+            st.markdown(f"""
+            - ID: {record["ID"]}
+            - Name: {record["Name"]}
+            - Working Hours: {record["Working Hours"]}
+            - Overtime Hours: {record["Overtime Hours"]}
+            """)
+
+        with col2:
+            st.markdown(f"""
+            - Basic Salary: {record["Basic Salary"]} EGP
+            - :green[OT Pay:] {record["OT Pay"]} EGP
+            - :green[Bonus:] {record["Bonus"]} EGP
+            - Gross Salary: {record["Gross Salary"]} EGP
+            - :red[Deduction:] {record["Deduction"]} EGP
+            - **Net Salary:** {record["Net Salary"]} EGP
+            - **Performance:** {record["Performance"]}
+            """)
+
+    else:
+        st.info("No payroll records yet. Calculate a payroll first.")
+
+with tab3:
+    if st.session_state.payroll_records:
+        st.table(st.session_state.payroll_records)
+    else:
+        st.info("No payroll records yet. Calculate a payroll first.")
